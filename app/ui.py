@@ -103,7 +103,11 @@ class EduAskAIApp(ctk.CTk):
     def _answer_in_background(self, message):
         """Run a potentially slow agent request in a worker thread."""
         try:
-            response = self.agent.answer(message, self.difficulty.get())
+            selected = self.selected_pdf.get()
+            document_name = None if selected == "No PDFs uploaded yet." else selected
+            response = self.agent.answer(
+                message, self.difficulty.get(), document_name=document_name
+            )
         except Exception as error:
             response = f"Sorry, I could not complete that request. {error}"
         self.after(0, lambda: self._show_response(response))

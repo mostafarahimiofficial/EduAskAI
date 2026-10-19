@@ -45,7 +45,7 @@ class PDFRetriever:
         self.collection.add(documents=documents, metadatas=metadatas, ids=ids)
         return filename
 
-    def retrieve(self, question, count=4):
+    def retrieve(self, question, count=4, source=None):
         """Find relevant chunks for a student question.
 
         Args:
@@ -57,11 +57,30 @@ class PDFRetriever:
         """
         if self.collection.count() == 0:
             return []
-        result = self.collection.query(query_texts=[question], n_results=min(count, self.collection.count()))
+        filters = {"where": {"source": source}} if source else {}
+        available = self.collection.count(where={"source": source}) if source else self.collection.count()
+        if not available:
+            return []
+        result = self.collection.query(
+            query_texts=[question], n_results=min(count, available), **filters
+        )
         return [
             {"text": text, "source": metadata["source"], "page": metadata["page"]}
             for text, metadata in zip(result["documents"][0], result["metadatas"][0])
         ]
+
+    def get_pdf_chunks(self, filename):
+        """Return every indexed chunk for one PDF in page order.
+
+        Study-question generation needs broad document coverage; semantic top-k
+        retrieval can otherwise select incidental passages and miss key topics.
+        """
+        data = self.collection.get(where={"source": filename}, include=["documents", "metadatas"])
+        items = [
+            {"text": text, "source": metadata["source"], "page": metadata["page"]}
+            for text, metadata in zip(data.get("documents", []), data.get("metadatas", []))
+        ]
+        return sorted(items, key=lambda item: item["page"])
 
     def list_pdfs(self):
         """Return unique PDF source names currently stored in the collection."""

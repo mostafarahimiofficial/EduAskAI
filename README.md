@@ -88,7 +88,7 @@ PDF → text extraction → clean text → chunks → embeddings → ChromaDB
 Student question → vector retrieval → relevant passages → LLM answer
 ```
 
-Each stored chunk includes its original PDF file name and page number. The AI is instructed to prefer retrieved content and admit when the PDF does not contain an answer.
+Each stored chunk includes its original PDF file name and page number. The selected document is used for PDF questions and study-question generation. Study questions use the document's full indexed text (summarized in batches for long PDFs), so generation can consider important subjects across the document instead of relying on only a few search matches. The prompt asks the AI to skip page labels and unexplained headings, avoid unsupported claims and repetitive questions, and cite the relevant pages. The AI is instructed to prefer retrieved content and admit when the PDF does not contain an answer.
 
 ## How the agent works
 

@@ -42,8 +42,13 @@ def question_prompt(context, difficulty, number):
         "Medium": "comparisons, relationships, and basic application",
         "Hard": "deeper reasoning, analysis, and relationships between concepts",
     }
-    return f"""Create exactly {number} {difficulty} study questions from this PDF material as clean Markdown.
+    return f"""Create up to {number} useful {difficulty} study questions from this PDF material as clean Markdown.
 {difficulty} questions should test {rules[difficulty]}.
+First identify the document's important ideas, explanations, processes, evidence, and conclusions. Build questions from those ideas and their relationships.
+Do not make questions about page numbers, page labels, the document title, course or semester labels, table-of-contents entries, isolated headings, or other administrative details.
+Do not treat a heading as a fact. A heading is useful only when the supplied text explains the subject.
+Every answer must directly answer its question in natural, student-friendly language and be supported by the supplied text. Explain the idea in your own words; do not merely repeat the question or attach an unsupported interpretation.
+Include a short source citation with the PDF filename and page number(s) for each answer. If the material does not support enough worthwhile questions, create fewer rather than padding the set with trivial questions.
 For every item, use exactly this readable structure:
 ## Question N
 **Difficulty:** {difficulty}
@@ -53,6 +58,8 @@ For every item, use exactly this readable structure:
 
 **Answer**
 ...
+
+Use this material as evidence, not as a list of prompts. Select a balanced set of the document's most important subjects, and avoid asking several questions about the same idea.
 
 PDF material:
 {context}"""
