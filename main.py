@@ -4,10 +4,12 @@ from app.ui import EduAskAIApp
 
 
 def main():
-    """Create and start the EduAskAI desktop application."""
+    """
+        Create and start the EduAskAI desktop application.
+        Creaing a object from EduAskAIApp() class
+    """
     app = EduAskAIApp()
     app.mainloop()
-
 
 if __name__ == "__main__":
     main()

@@ -1,5 +1,6 @@
 .env
 .venv/
+uv-env/
 __pycache__/
 *.pyc
 database/

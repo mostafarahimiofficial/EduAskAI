@@ -55,12 +55,15 @@ class PDFRetriever:
         Returns:
             A list of dictionaries with text and metadata.
         """
-        if self.collection.count() == 0:
-            return []
-        filters = {"where": {"source": source}} if source else {}
-        available = self.collection.count(where={"source": source}) if source else self.collection.count()
+        if source:
+            available = len(
+                self.collection.get(where={"source": source}, include=[])["ids"]
+            )
+        else:
+            available = self.collection.count()
         if not available:
             return []
+        filters = {"where": {"source": source}} if source else {}
         result = self.collection.query(
             query_texts=[question], n_results=min(count, available), **filters
         )

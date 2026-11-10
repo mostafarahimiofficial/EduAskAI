@@ -82,28 +82,13 @@ class EduAskAgent:
         return "\n\n".join(f"[{item['source']}, page {item['page']}]\n{item['text']}" for item in chunks)
 
     def _study_context(self, chunks):
-        """Build document-wide study context while keeping long PDFs manageable."""
-        if len(chunks) <= 12:
-            return self._format_context(chunks)
+        """Select document-wide passages without adding serial LLM requests.
 
-        summaries = []
-        for start in range(0, len(chunks), 10):
-            batch = chunks[start:start + 10]
-            material = self._format_context(batch)
-            summary = self.llm.ask([
-                {
-                    "role": "system",
-                    "content": (
-                        "You are preparing study notes from a PDF. Extract only substantive, "
-                        "explained concepts, processes, evidence, and conclusions. Ignore page "
-                        "labels, titles, headings without explanation, and administrative details. "
-                        "Keep the notes concise and retain the supplied page citations. Do not add facts."
-                    ),
-                },
-                {
-                    "role": "user",
-                    "content": "Extract up to 5 important study ideas from these passages:\n\n" + material,
-                },
-            ], temperature=0.1)
-            summaries.append(summary)
-        return "\n\n".join(summaries)
+        Long documents are sampled evenly in page order. The question-generation
+        call can then cover the document in one request instead of first making
+        one slow summarization request per batch of chunks.
+        """
+        if len(chunks) > 12:
+            last_index = len(chunks) - 1
+            chunks = [chunks[round(index * last_index / 11)] for index in range(12)]
+        return self._format_context(chunks)

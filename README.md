@@ -40,36 +40,40 @@ The agent uses simple keyword-based routing: current-information requests use we
 
 ## Installation
 
-1. Open a terminal in this `EduAskAI` folder.
-2. Create and activate a virtual environment:
+1. Install [`uv`](https://docs.astral.sh/uv/getting-started/installation/) if it is not already installed. On Windows, you can use:
 
-```bash
-python -m venv .venv
-.venv\Scripts\activate
+```powershell
+winget install --id astral-sh.uv -e
 ```
 
-3. Install packages:
+2. Open a terminal in this `EduAskAI` folder and sync the project:
 
-```bash
-pip install -r requirements.txt
+```powershell
+$env:UV_PROJECT_ENVIRONMENT = "uv-env"
+uv sync
 ```
 
-4. Copy `.env.example` to `.env`, then add your Groq key:
+This creates the uv-managed environment in `uv-env` and installs the dependencies pinned in `uv.lock`. Set `UV_PROJECT_ENVIRONMENT` in each new terminal before running uv commands for this project. Run `uv sync` again after dependencies change.
+
+3. Copy `.env.example` to `.env`, then add your Groq key:
 
 ```env
 GROQ_API_KEY=your_groq_api_key_here
 ```
 
-5. Start the application:
+4. Start the application:
 
-```bash
-python main.py
+```powershell
+$env:UV_PROJECT_ENVIRONMENT = "uv-env"
+uv run python main.py
 ```
 
 ## Project Structure
 
 ```text
 main.py             Application entry point
+pyproject.toml      Project metadata and dependencies managed by uv
+uv.lock             Locked dependency versions
 app/                Dark UI and reusable message widgets
 agent/              Simple request routing and prompts
 llm/                Groq OpenAI-compatible client
@@ -88,7 +92,7 @@ PDF → text extraction → clean text → chunks → embeddings → ChromaDB
 Student question → vector retrieval → relevant passages → LLM answer
 ```
 
-Each stored chunk includes its original PDF file name and page number. The selected document is used for PDF questions and study-question generation. Study questions use the document's full indexed text (summarized in batches for long PDFs), so generation can consider important subjects across the document instead of relying on only a few search matches. The prompt asks the AI to skip page labels and unexplained headings, avoid unsupported claims and repetitive questions, and cite the relevant pages. The AI is instructed to prefer retrieved content and admit when the PDF does not contain an answer.
+Each stored chunk includes its original PDF file name and page number. The selected document is used for PDF questions and study-question generation. Study questions use up to 12 evenly spaced chunks from the selected document, so long PDFs can be covered in a single LLM request rather than requiring several sequential summarization requests. The prompt asks the AI to skip page labels and unexplained headings, avoid unsupported claims and repetitive questions, and cite the relevant pages. The AI is instructed to prefer retrieved content and admit when the PDF does not contain an answer.
 
 ## How the agent works
 

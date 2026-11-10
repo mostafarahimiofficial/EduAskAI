@@ -98,15 +98,20 @@ class EduAskAIApp(ctk.CTk):
         self.input.delete("1.0", "end")
         self.add_message("You", message)
         self.send_button.configure(state="disabled", text="Thinking...")
-        threading.Thread(target=self._answer_in_background, args=(message,), daemon=True).start()
+        selected = self.selected_pdf.get()
+        document_name = None if selected == "No PDFs uploaded yet." else selected
+        difficulty = self.difficulty.get()
+        threading.Thread(
+            target=self._answer_in_background,
+            args=(message, difficulty, document_name),
+            daemon=True,
+        ).start()
 
-    def _answer_in_background(self, message):
+    def _answer_in_background(self, message, difficulty, document_name):
         """Run a potentially slow agent request in a worker thread."""
         try:
-            selected = self.selected_pdf.get()
-            document_name = None if selected == "No PDFs uploaded yet." else selected
             response = self.agent.answer(
-                message, self.difficulty.get(), document_name=document_name
+                message, difficulty, document_name=document_name
             )
         except Exception as error:
             response = f"Sorry, I could not complete that request. {error}"
